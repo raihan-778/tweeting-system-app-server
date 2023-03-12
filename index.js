@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const app = express();
+const { MongoClient } = require("mongodb");
 require("dotenv").config();
 const port = process.env.PORT || 5000;
 
@@ -10,13 +11,19 @@ app.use(cors());
 app.use(express.json());
 
 //mongodb connection code
-`mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.jz1qjld.mongodb.net/?retryWrites=true&w=majority`;
+
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.jz1qjld.mongodb.net/?retryWrites=true&w=majority`;
+const client = new MongoClient(uri);
 
 async function run() {
   try {
     const usersCollection = client
       .db("tweetingSystemApp")
       .collection("allUsers");
+
+    const tweetsCollection = client
+      .db("tweetingSystemApp")
+      .collection(allTweets);
 
     //midleware for verify admin to avoiding code repet
 
@@ -36,7 +43,7 @@ async function run() {
 
     app.post("/tweet", (req, res) => {
       const user = req.body;
-      const result = usersCollection.insertOne(user);
+      const result = tweetsCollection.insertOne(user);
       res.send(result);
     });
 
@@ -44,14 +51,14 @@ async function run() {
 
     app.get("/all-tweets", async (req, res) => {
       const query = {};
-      const result = await allProductsCollection.find(query).toArray();
+      const result = await tweetsCollection.find(query).toArray();
       res.send(result);
     });
 
     //post api for all products db
     app.post("/tweets-Collection", async (req, res) => {
       const product = req.body;
-      const result = await allProductsCollection.insertOne(product);
+      const result = await tweetsCollection.insertOne(product);
       res.send(result);
     });
 
@@ -59,12 +66,12 @@ async function run() {
 
     //get api for all sellers
 
-    app.get("/user", verifyJWT, verifyAdmin, async (req, res) => {
-      const query = { type: "user" };
-      const sellers = await usersCollection.find(query).toArray();
-      res.send(sellers);
-      // console.log(sellers);
-    });
+    // app.get("/user", verifyJWT, verifyAdmin, async (req, res) => {
+    //   const query = { type: "user" };
+    //   const sellers = await usersCollection.find(query).toArray();
+    //   res.send(sellers);
+    //   // console.log(sellers);
+    // });
 
     //get api for picking admin user
     app.get("/users/admin/:email", async (req, res) => {
@@ -80,7 +87,7 @@ async function run() {
       const query = {
         email: email,
       };
-      const myProducts = await bookedProductsCollection.find(query).toArray();
+      const mytweets = await tweetsCollection.find(query).toArray();
       res.send(myProducts);
     });
 
@@ -88,18 +95,19 @@ async function run() {
     app.get("/tweet/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
-      const result = await bookedProductsCollection.findOne(query);
+      const result = await tweetsCollection.findOne(query);
       res.send(result);
     }),
       //delete products from booking
       app.delete("/tweet/:id", async (req, res) => {
         const id = req.params.id;
         const filter = { _id: ObjectId(id) };
-        const result = await bookedProductsCollection.deleteOne(filter);
+        const result = await tweetsCollection.deleteOne(filter);
 
         res.send(result);
       }),
-      app.put("/sellersproducts/:id", verifyJWT, async (req, res) => {
+      //user reaction api for tweet
+      app.put("/all-tweets/:id", async (req, res) => {
         const id = req.params.id;
         const filter = { _id: ObjectId(id) };
         const options = { upsert: true };
@@ -108,13 +116,15 @@ async function run() {
             react: "love",
           },
         };
-        const result = await allProductsCollection.updateOne(
+        const result = await tweetsCollection.updateOne(
           filter,
           updatedDoc,
           options
         );
         res.send(result);
       });
+  } catch {
+    (err) => console.log(err);
   } finally {
   }
 }
