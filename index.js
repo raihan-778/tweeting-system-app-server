@@ -56,9 +56,15 @@ async function run() {
     });
 
     //post api for all products db
-    app.post("/tweets-Collection", async (req, res) => {
+    app.post("/tweets-collection", async (req, res) => {
       const product = req.body;
       const result = await tweetsCollection.insertOne(product);
+      res.send(result);
+    });
+    //post api for user collection
+    app.post("/users-collection", async (req, res) => {
+      const newUser = req.body;
+      const result = await usersCollection.insertOne(newUser);
       res.send(result);
     });
 
@@ -80,6 +86,13 @@ async function run() {
       const user = await usersCollection.findOne(query);
       res.send({ isAdmin: user?.role === "admin" });
     });
+    //get api for getting user info
+    app.get("/users/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const user = await usersCollection.findOne(query);
+      res.send(user);
+    });
 
     //get api for buyers products
     app.get("/users-tweet", async (req, res) => {
@@ -88,7 +101,7 @@ async function run() {
         email: email,
       };
       const mytweets = await tweetsCollection.find(query).toArray();
-      res.send(myProducts);
+      res.send(mytweets);
     });
 
     //get  booking info by id
