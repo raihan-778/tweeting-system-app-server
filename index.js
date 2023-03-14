@@ -11,6 +11,8 @@ app.use(cors());
 app.use(express.json());
 
 //mongodb connection code
+// DB_USER="tweetingSystemApp"
+// DB_PASSWORD="UT6iPiS6WgI3xn7V"
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.jz1qjld.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri);
