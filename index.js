@@ -22,6 +22,7 @@ async function run() {
     const usersCollection = client
       .db("tweetingSystemApp")
       .collection("allUsers");
+    console.log(usersCollection);
 
     const tweetsCollection = client
       .db("tweetingSystemApp")
@@ -67,6 +68,7 @@ async function run() {
     app.post("/users-collection", async (req, res) => {
       const newUser = req.body;
       const result = await usersCollection.insertOne(newUser);
+      console.log(result);
       res.send(result);
     });
 
